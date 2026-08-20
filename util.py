@@ -1,33 +1,65 @@
 import os
 import re
+from dotenv import load_dotenv
+from google import genai
+from openai import OpenAI
 
-from anthropic import Anthropic
 
-client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+load_dotenv()
 
 
-def llm_call(prompt: str, system_prompt: str = "", model="claude-sonnet-4-6") -> str:
+# MODEL = "gemini-3.7-flash"
+
+
+def llm_call(
+    prompt: str,
+    system_prompt: str = "",
+    model="deepseek-ai/DeepSeek-V4-Pro-0813:novita",
+) -> str:
     """
     Calls the model with the given prompt and returns the response.
 
-    Args:
+     Args:
         prompt (str): The user prompt to send to the model.
-        system_prompt (str, optional): The system prompt to send to the model. Defaults to "".
-        model (str, optional): The model to use for the call. Defaults to "claude-sonnet-4-6".
+         system_prompt (str, optional): The system prompt to send to the model. Defaults to "".
+         model (str, optional): The model to use for the call. Defaults to "claude-sonnet-4-6".
 
-    Returns:
-        str: The response from the language model.
+     Returns:
+         str: The response from the language model.
     """
-    client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-    messages = [{"role": "user", "content": prompt}]
-    response = client.messages.create(
-        model=model,
-        max_tokens=4096,
-        system=system_prompt,
-        messages=messages,
-        temperature=0.1,
+    client = OpenAI(
+        base_url="https://router.huggingface.co/v1",
+        api_key=os.getenv["HF_TOKEN"],
     )
-    return response.content[0].text
+
+    completion = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    return completion.choices[0].message
+
+
+# def llm_call(prompt: str, system_prompt: str = "", model="gemini-3.7-flash") -> str:
+#     """
+#     Calls the model with the given prompt and returns the response.
+
+#     Args:
+#         prompt (str): The user prompt to send to the model.
+#         system_prompt (str, optional): The system prompt to send to the model. Defaults to "".
+#         model (str, optional): The model to use for the call. Defaults to "claude-sonnet-4-6".
+
+#     Returns:
+#         str: The response from the language model.
+#     """
+#     client = genai.Client()
+#     response = client.interactions.create(
+#         model=model,
+#         input=prompt,
+#         system_instruction=system_prompt,
+#     )
+
+#     return response.output_text
 
 
 def extract_xml(text: str, tag: str) -> str:
